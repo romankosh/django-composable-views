@@ -1,7 +1,7 @@
-Welcome to Django Composing Views' documentation!
+Welcome to Django Composable Views documentation!
 ==============================================
 
-Som description.
+Some description.
 
 
 Installation
@@ -9,11 +9,11 @@ Installation
 
 Installing from pypi (using pip). ::
 
-    pip install django-composing-views
+    pip install django-composable-views
 
 Installing from github. ::
 
-    pip install -e git://gitlab.com/preusx/django-composing-views.git#egg=django-composing-views
+    pip install -e git://gitlab.com/preusx/django-composable-views.git#egg=django-composable-views
 
 
 Contents

@@ -19,7 +19,7 @@ def configure(nose_args=None):
             INSTALLED_APPS=[
                 'django.contrib.contenttypes',
                 'django.contrib.auth',
-                'composing_views',
+                'composable_views',
                 'tests',
             ],
             ROOT_URLCONF='tests.urls',
