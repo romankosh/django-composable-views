@@ -1,6 +1,7 @@
 from django import test
+from django.views.generic import View
 
-from ..mixins import NamedClassMixin
+from ..mixins import NamedClassMixin, UrlBuilderMixin, PAGED_REGEXP
 
 
 class NamedClassTestCase(test.TestCase):
@@ -28,3 +29,53 @@ class NamedClassTestCase(test.TestCase):
         self.assertEqual(
             self.VerboseNamedClass.get_verbose_name(), 'Verbose name'
         )
+
+
+class UrlBuilderTestCase(test.TestCase):
+    class WithUrl(UrlBuilderMixin, View):
+        name = 'some'
+
+    class Unnamed(UrlBuilderMixin, View):
+        url_name = ''
+
+    class WithReNamedUrl(UrlBuilderMixin, View):
+        name = 'some'
+        url_name = 'some-url'
+
+    class CustomRegex(WithReNamedUrl, View):
+        url_regex_list = [
+            r'([a-z])',
+            r'(.+)'
+        ]
+
+    def test_get_url_name(self):
+        self.assertEqual(self.Unnamed.get_url_name(), '')
+        self.assertEqual(self.WithUrl.get_url_name(), 'some')
+        self.assertEqual(self.WithReNamedUrl.get_url_name(), 'some-url')
+
+    def test_get_url_regex(self):
+        self.assertEqual(self.Unnamed.get_url_regex(), r'^/$')
+        self.assertEqual(self.WithUrl.get_url_regex(), r'^some/$')
+        self.assertEqual(self.WithReNamedUrl.get_url_regex(), r'^some-url/$')
+        self.assertEqual(
+            self.CustomRegex.get_url_regex(), r'^some-url/([a-z])/$'
+        )
+        self.assertEqual(
+            self.CustomRegex.get_url_regex(r'(.*)'), r'^some-url/(.*)/$'
+        )
+
+    def test_as_urls(self):
+        first, second = self.CustomRegex.as_urls()
+
+        self.assertEqual(first._regex, r'^some-url/([a-z])/$')
+        self.assertEqual(first.name, 'some-url')
+        self.assertEqual(first.callback.view_class, self.CustomRegex)
+        self.assertEqual(second._regex, r'^some-url/(.+)/$')
+        self.assertEqual(second.name, 'some-url')
+        self.assertEqual(second.callback.view_class, self.CustomRegex)
+
+        none, paged = self.CustomRegex.as_urls(['', PAGED_REGEXP])
+        self.assertEqual(none._regex, r'^some-url/$')
+        self.assertEqual(paged._regex, r'^some-url/page/(?P<page>[0-9]+)/$')
+        self.assertEqual(paged.name, 'some-url')
+        self.assertEqual(paged.callback.view_class, self.CustomRegex)

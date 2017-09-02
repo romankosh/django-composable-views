@@ -51,7 +51,7 @@ if __name__ == '__main__':
     )
     options, args = parser.parse_args()
 
-    nose_args = []
+    nose_args = ['--nocapture']
     if options.pdb:
         nose_args.append('--pdb')
 
