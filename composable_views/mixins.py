@@ -132,115 +132,119 @@ class UrlBuilderMixin(NamedClassMixin):
         )
 
 
-# class ActionViewMixin(UrlBuilderMixin, ClassConnectableClass):
-#     @cached_property
-#     def parental(self):
-#         parent = self.parent_class()
+class ActionViewMixin(UrlBuilderMixin, ClassConnectableClass):
+    @cached_property
+    def parental(self):
+        parent = self.parent_class()
 
-#         parent.request = self.request
-#         parent.args = self.args
-#         parent.kwargs = self.kwargs
+        parent.request = self.request
+        parent.args = self.args
+        parent.kwargs = self.kwargs
 
-#         return parent
+        return parent
 
-#     @classmethod
-#     def set_parent_class(cls, parent_class):
-#         if cls.parent_class is not None:
-#             raise ImproperlyConfigured(
-#                 'Action may be registered only once.'
-#             )
+    @classmethod
+    def set_parent_class(cls, parent_class):
+        if cls.parent_class is not None:
+            raise ImproperlyConfigured(
+                'Action may be registered only once.'
+            )
 
-#         super().set_parent_class(parent_class)
-
-
-# class ActionConnectorBase(ClassConnectorBase, abc.ABCMeta):
-#     pass
+        super().set_parent_class(parent_class)
 
 
-# class ActionConnector(
-#     ClassConnectable, ClassConnector, collections.UserDict,
-#     metaclass=ActionConnectorBase
-# ):
-#     def __init__(self, *actions):
-#         self.data = {
-#             action.get_name(): action for action in actions
-#         }
-
-#         super().__init__(*actions)
-
-#     def set_parent_class(self, cls):
-#         super().set_parent_class(cls)
-
-#         for key in self.data:
-#             self.data[key].set_parent_class(cls)
-
-#     def __getattr__(self, key):
-#         return self.data[key]
+class ActionConnectorBase(ClassConnectorBase, abc.ABCMeta):
+    pass
 
 
-# class ActionsHolderBase(ClassConnectorBase):
-#     actions_list_parameter = 'actions'
+class ActionConnector(
+    ClassConnectable, ClassConnector, collections.UserDict,
+    metaclass=ActionConnectorBase
+):
+    def __init__(self, *actions):
+        self.data = {
+            action.get_name(): action for action in actions
+        }
 
-#     def __new__(cls, name, bases, attrs):
-#         actions = attrs.get(cls.actions_list_parameter, [])
+        super().__init__(*actions)
 
-#         if (
-#             isinstance(actions, collections.Iterable) and not
-#             isinstance(actions, str)
-#         ):
-#             actions = ActionConnector(*actions)
+    def set_parent_class(self, cls):
+        super().set_parent_class(cls)
 
-#         if not isinstance(actions, ActionConnector):
-#             raise ImproperlyConfigured(
-#                 f'Class property "{cls.actions_list_parameter}" must be '
-#                 'iterable, or ActionConnector instance.'
-#             )
+        for key in self.data:
+            self.data[key].set_parent_class(cls)
 
-#         attrs[cls.actions_list_parameter] = actions
-
-#         return super(ActionsHolderBase, cls).__new__(cls, name, bases, attrs)
+    def __getattr__(self, key):
+        try:
+            return self.data[key]
+        except KeyError as e:
+            raise AttributeError(e)
 
 
-# class ActionsHolder(
-#     ClassConnector, UrlBuilderMixin, metaclass=ActionsHolderBase
-# ):
-#     actions = []
-#     actions_url_namespace = 'actions'
-#     actions_url_format = r'^{regex}/action/'
+class ActionsHolderBase(ClassConnectorBase):
+    actions_list_parameter = 'actions'
 
-#     @classmethod
-#     def as_urls(cls, regex_list=None):
-#         # for name, view in cls.views.items():
-#         #     action_urlpatterns.append(
-#         #         url(
-#         #             cls.action_url_regexp_format.format(**{
-#         #                 'name': name,
-#         #                 }),
-#         #             view,
-#         #             name=name
-#         #             )
-#         #         )
+    def __new__(cls, name, bases, attrs):
+        actions = attrs.get(cls.actions_list_parameter, [])
 
-#         # return [
-#         #     url(r'^', include([
-#         #         url(r'^$', cls.as_view(), name="dispatch"),
-#         #     ] + action_urlpatterns, namespace="actions")),
-#         # ]
+        if (
+            isinstance(actions, collections.Iterable) and not
+            isinstance(actions, ActionConnector) and not
+            isinstance(actions, str)
+        ):
+            actions = ActionConnector(*actions)
 
-#         regex_list = regex_list or cls.url_regex_list
-#         urls = reduce(lambda acc, x: x[1].as_urls(), cls.actions.items())
+        if not isinstance(actions, ActionConnector):
+            raise ImproperlyConfigured(
+                f'Class property "{cls.actions_list_parameter}" must be '
+                'iterable, or ActionConnector instance.'
+            )
 
-#         return [
-#             url(r'^', include([
-#                 url(
-#                     cls.actions_url_prefix.format(regex=regex),
-#                     include(urls)
-#                 )
-#                 for regex in regex_list
-#             ]), namespace=cls.actions_url_namespace),
+        attrs[cls.actions_list_parameter] = actions
 
-#             *super().as_urls(regex_list)
-#         ]
+        return super(ActionsHolderBase, cls).__new__(cls, name, bases, attrs)
+
+
+class ActionsHolder(
+    ClassConnector, UrlBuilderMixin, metaclass=ActionsHolderBase
+):
+    actions = []
+    actions_url_namespace = 'actions'
+    actions_url_format = r'^{regex}/action/'
+
+    @classmethod
+    def as_urls(cls, regex_list=None):
+        # for name, view in cls.views.items():
+        #     action_urlpatterns.append(
+        #         url(
+        #             cls.action_url_regexp_format.format(**{
+        #                 'name': name,
+        #                 }),
+        #             view,
+        #             name=name
+        #             )
+        #         )
+
+        # return [
+        #     url(r'^', include([
+        #         url(r'^$', cls.as_view(), name="dispatch"),
+        #     ] + action_urlpatterns, namespace="actions")),
+        # ]
+
+        regex_list = regex_list or cls.url_regex_list
+        urls = reduce(lambda acc, x: x[1].as_urls(), cls.actions.items())
+
+        return [
+            url(r'^', include([
+                url(
+                    cls.actions_url_prefix.format(regex=regex),
+                    include(urls)
+                )
+                for regex in regex_list
+            ]), namespace=cls.actions_url_namespace),
+
+            *super().as_urls(regex_list)
+        ]
 
 
 # class ClassConnectable:

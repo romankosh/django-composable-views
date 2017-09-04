@@ -1,79 +1,79 @@
-# from django import test
-# from django.views.generic import View
-# from django.utils.functional import SimpleLazyObject
-# from django.core.exceptions import ImproperlyConfigured
+from django import test
+from django.views.generic import View
+from django.utils.functional import SimpleLazyObject
+from django.core.exceptions import ImproperlyConfigured
 
-# from ..mixins import ActionViewMixin, ActionConnector, ActionsHolder
-
-
-# class ActionOne(ActionViewMixin, View):
-#     name = 'one'
+from ..mixins import ActionViewMixin, ActionConnector, ActionsHolder
 
 
-# class ActionTwo(ActionViewMixin, View):
-#     name = 'two'
+class ActionOne(ActionViewMixin, View):
+    name = 'one'
 
 
-# class ActionThree(ActionViewMixin, View):
-#     name = 'three'
+class ActionTwo(ActionViewMixin, View):
+    name = 'two'
 
 
-# class ActionFour(ActionViewMixin, View):
-#     name = 'four'
+class ActionThree(ActionViewMixin, View):
+    name = 'three'
 
 
-# class ActionFive(ActionViewMixin, View):
-#     name = 'five'
+class ActionFour(ActionViewMixin, View):
+    name = 'four'
 
 
-# class ActionsViewList(ActionsHolder, View):
-#     actions = [
-#         ActionOne,
-#         ActionTwo
-#     ]
+class ActionFive(ActionViewMixin, View):
+    name = 'five'
 
 
-# class ActionsViewListConnector(ActionsHolder, View):
-#     actions = ActionConnector(
-#         ActionThree,
-#         ActionFour
-#     )
+class ActionsViewList(ActionsHolder, View):
+    actions = [
+        ActionOne,
+        ActionTwo
+    ]
 
 
-# class ActionsViewConnectorTestCase(test.TestCase):
-#     def test_actions_(self):
-#         self.assertIn('one', ActionsViewList.actions)
-#         self.assertIn('three', ActionsViewListConnector.actions)
+class ActionsViewListConnector(ActionsHolder, View):
+    actions = ActionConnector(
+        ActionThree,
+        ActionFour
+    )
 
-#     def test_actions_types(self):
-#         class ConnectorTuple(ActionsHolder, View):
-#             actions = ()
 
-#         class ConnectorList(ActionsHolder, View):
-#             actions = []
+class ActionsViewConnectorTestCase(test.TestCase):
+    def test_actions_(self):
+        self.assertIn('one', ActionsViewList.actions)
+        self.assertIn('three', ActionsViewListConnector.actions)
 
-#         class ConnectorGenerator(ActionsHolder, View):
-#             actions = (x for x in [ActionFive])
+    def test_actions_types(self):
+        class ConnectorTuple(ActionsHolder, View):
+            actions = ()
 
-#         class ConnectorMap(ActionsHolder, View):
-#             actions = map(lambda x: x, range(1, 1))
+        class ConnectorList(ActionsHolder, View):
+            actions = []
 
-#         class ConnectorPromise(ActionsHolder, View):
-#             actions = SimpleLazyObject(lambda: [])
+        class ConnectorGenerator(ActionsHolder, View):
+            actions = (x for x in [ActionFive])
 
-#     def test_actions_restrictions(self):
-#         with self.assertRaises(ImproperlyConfigured):
-#             class ConnectorUsed(ActionsHolder, View):
-#                 actions = (ActionOne, )
+        class ConnectorMap(ActionsHolder, View):
+            actions = map(lambda x: x, range(1, 1))
 
-#         with self.assertRaises(ImproperlyConfigured):
-#             class ConnectorNone(ActionsHolder, View):
-#                 actions = None
+        class ConnectorPromise(ActionsHolder, View):
+            actions = SimpleLazyObject(lambda: [])
 
-#         with self.assertRaises(ImproperlyConfigured):
-#             class ConnectorSingle(ActionsHolder, View):
-#                 actions = ActionFour
+    def test_actions_restrictions(self):
+        with self.assertRaises(ImproperlyConfigured):
+            class ConnectorUsed(ActionsHolder, View):
+                actions = (ActionOne, )
 
-#         with self.assertRaises(ImproperlyConfigured):
-#             class ConnectorString(ActionsHolder, View):
-#                 actions = 'string'
+        with self.assertRaises(ImproperlyConfigured):
+            class ConnectorNone(ActionsHolder, View):
+                actions = None
+
+        with self.assertRaises(ImproperlyConfigured):
+            class ConnectorSingle(ActionsHolder, View):
+                actions = ActionFour
+
+        with self.assertRaises(ImproperlyConfigured):
+            class ConnectorString(ActionsHolder, View):
+                actions = 'string'
