@@ -104,8 +104,6 @@ def show_urls(urllist, depth=0):
         if hasattr(entry, 'url_patterns'):
             show_urls(entry.url_patterns, depth + 1)
 
-show_urls(urlpatterns)
-
 
 @override_settings(ROOT_URLCONF=__name__)
 class ActionsViewConnectorTestCase(test.TestCase):
