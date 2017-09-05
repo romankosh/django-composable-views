@@ -1,4 +1,3 @@
-import re
 import collections
 import abc
 from functools import reduce
@@ -6,130 +5,19 @@ from functools import reduce
 from django.conf.urls import url, include
 from django.utils.functional import cached_property
 from django.core.exceptions import ImproperlyConfigured
-from django.utils import six
 
-from .utils import (
+from ..utils import (
     ClassConnectable, ClassConnector, ClassConnectorBase, ClassConnectableClass
 )
+from .url_build import UrlBuilderMixin
 
 
-PK_REGEX = r'(?P<pk>[0-9]+)/'
-SLUG_REGEX = r'(?P<slug>[0-9a-zA-Z_-]+)/'
-PK_SLUG_REGEX = f'{PK_REGEX}-{SLUG_REGEX}'
-PAGED_REGEXP = r'page/(?P<page>[0-9]+)/'
-
-
-class NamedClassMixin:
-    name = None
-    verbose_name = None
-
-    @classmethod
-    def get_name(cls) -> str:
-        """
-        Returns class name for further using
-
-        Returns:
-            str: class name
-        """
-        name = cls.name
-
-        if not cls.name:
-            name = '-'.join(
-                re.sub(r'(?P<cap>[A-Z])', ' \g<cap>', cls.__name__).split()
-            ).lower()
-
-        return name
-
-    @classmethod
-    def get_verbose_name(cls) -> str:
-        """
-        Returns view class name for further using
-
-        Returns:
-            str: class name
-        """
-        name = cls.verbose_name
-
-        if not cls.verbose_name:
-            name = (
-                cls.get_name()
-                    .replace('-', ' ')
-                    .replace('_', ' ')
-                    .capitalize()
-            )
-
-        return name
-
-
-class UrlBuilderMixin(NamedClassMixin):
-    url_name = None
-    url_regex_list = [
-        r''
-    ]
-    url_format = r'^{name}/{regex}/$'
-
-    @classmethod
-    def get_url_name(cls) -> str:
-        """
-        Retreive url name to use in url creation.
-
-        Returns:
-            str: Url name string
-        """
-        name = cls.get_name()
-
-        return (
-            cls.url_name if cls.url_name is not None
-            else name if name else ''
-        )
-
-    @classmethod
-    def get_url_regex(cls, regex: str=None) -> str:
-        """
-        Based on provided regex build an url regex for the current view.
-
-        Args:
-            regex (None, optional): If regex is none the first from
-                url_regex_list will be used.
-
-        Returns:
-            str: Resulting url regex.
-        """
-        if regex is None:
-            regex = next(iter(cls.url_regex_list), None)
-
-        name = cls.get_url_name()
-
-        return re.sub(
-            r'(/+)', '/', cls.url_format.format(name=name, regex=regex)
-        )
-
-    @classmethod
-    def as_urls(cls, regex_list: list=None, **kwargs):
-        """
-        Creates a generator with all possible url definitions for this
-        view.
-
-        Args:
-            regex_list (list, optional): List of regexes, that will be
-                used instead of the default ones, described in class.
-            **kwargs: All other kwargs will be cast to views `as_view`
-                method.
-
-        Returns:
-            generator(url): Generator of url definitions.
-        """
-        if regex_list is None:
-            regex_list = cls.url_regex_list
-
-        return (
-            url(
-                cls.get_url_regex(regex),
-                cls.as_view(**kwargs),
-                name=cls.get_url_name()
-            )
-            for regex in regex_list
-        )
+# def _namespace_chain(urls, *namespaces):
+#     return reduce(
+#         lambda acc, x: [url(r'^', include(acc, namespace=x))],
+#         reversed(namespaces),
+#         urls
+#     )[0]
 
 
 class ActionViewMixin(UrlBuilderMixin, ClassConnectableClass):
@@ -161,6 +49,9 @@ class ActionConnector(
     ClassConnectable, ClassConnector, collections.UserDict,
     metaclass=ActionConnectorBase
 ):
+    url_namespace = 'actions'
+    url_format = r'^{regex}action/'
+
     def __init__(self, *actions):
         self.data = {
             action.get_name(): action for action in actions
@@ -179,6 +70,16 @@ class ActionConnector(
             return self.data[key]
         except KeyError as e:
             raise AttributeError(e)
+
+    def as_urls(self, regex_list):
+        urls = reduce(
+            lambda acc, x: acc + list(x[1].as_urls()), self.items(), []
+        )
+
+        return url(r'^', include([
+            url(self.url_format.format(regex=regex), include(urls))
+            for regex in regex_list
+        ], namespace=self.url_namespace))
 
 
 class ActionsHolderBase(ClassConnectorBase):
@@ -209,8 +110,6 @@ class ActionsHolder(
     ClassConnector, UrlBuilderMixin, metaclass=ActionsHolderBase
 ):
     actions = []
-    actions_url_namespace = 'actions'
-    actions_url_format = r'^{regex}/action/'
 
     @classmethod
     def as_urls(cls, regex_list=None):
@@ -231,19 +130,40 @@ class ActionsHolder(
         #     ] + action_urlpatterns, namespace="actions")),
         # ]
 
-        regex_list = regex_list or cls.url_regex_list
-        urls = reduce(lambda acc, x: x[1].as_urls(), cls.actions.items())
+        view_urls = list(super().as_urls(regex_list))
 
         return [
-            url(r'^', include([
-                url(
-                    cls.actions_url_prefix.format(regex=regex),
-                    include(urls)
-                )
-                for regex in regex_list
-            ]), namespace=cls.actions_url_namespace),
+            *view_urls,
+            url(r'^', include([cls.actions.as_urls((
+                view_url.regex.pattern.lstrip('^').rstrip('$')
+                for view_url in view_urls
+            ))], namespace=cls.get_url_name()))
 
-            *super().as_urls(regex_list)
+            # _namespace_chain(
+            #     [
+            #         url(
+            #             cls.actions_url_format.format(
+            #                 regex=
+            #             ),
+            #             include(urls)
+            #         )
+            #     ],
+            #     ,
+            #     cls.actions_url_namespace
+            # ),
+
+            # url(r'^', include([url(r'^', include(
+            #     [
+            #         url(
+            #             cls.actions_url_format.format(
+            #                 regex=view_url.regex.pattern.rstrip('$')
+            #             ),
+            #             include(urls)
+            #         )
+            #         for view_url in view_urls
+            #     ],
+            #     namespace=cls.actions_url_namespace
+            # ))], namespace=cls.get_url_name())),
         ]
 
 
