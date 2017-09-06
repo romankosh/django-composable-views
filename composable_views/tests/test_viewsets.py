@@ -37,19 +37,25 @@ class SingleViewSet(ViewSet):
 
 
 class MultipleViewSet(ViewSet):
+    shared_properties = ['template_name']
+    template_name = 'noop.html'
+
     first_view_base = SingleView
-    first_template_name = 'noop.html'
     first_content_type = 'application/json'
     first_name = 'first'
 
     second_view_base = SingleView
-    second_template_name = 'noop.html'
     second_content_type = 'text/html'
     second_name = 'second'
 
     third_view_class = SingleView
     third_template_name = 'unused.html'
     third_content_type = 'unused'
+
+    fourth_view_base = SingleView
+    fourth_template_name = 'error.html'
+    fourth_content_type = 'text/html'
+    fourth_name = 'fourth'
 
 
 urlpatterns = [
@@ -104,6 +110,17 @@ class ViewSetTestCase(test.TestCase):
             MultipleViewSet.third_template_name
         )
 
+    def test_shared_properties(self):
+        # View base
+        self.assertEqual(
+            MultipleViewSet.first_view_class.content_type,
+            MultipleViewSet.first_content_type
+        )
+        self.assertEqual(
+            MultipleViewSet.second_view_class.content_type,
+            MultipleViewSet.second_content_type
+        )
+
     def test_initialization_errors(self):
         class View1(UrlBuilderMixin, TView):
             pass
@@ -151,14 +168,14 @@ class ViewSetTestCase(test.TestCase):
         self.assertEqual(second_response.status_code, 200)
         self.assertEqual(
             second_response.template_name[0],
-            MultipleViewSet.second_template_name
+            MultipleViewSet.template_name
         )
 
         self.assertEqual(reverse('multiple-view-set:first'), first_url)
         self.assertEqual(first_response.status_code, 200)
         self.assertEqual(
             first_response.template_name[0],
-            MultipleViewSet.first_template_name
+            MultipleViewSet.template_name
         )
         self.assertEqual(
             first_response.context_data['name'],
@@ -167,7 +184,12 @@ class ViewSetTestCase(test.TestCase):
 
     def test_views_response_class(self):
         single_url = '/single-view/'
+        fourth_url = '/fourth-view/'
 
         self.assertEqual(reverse('multiple-view-set:single-view'), single_url)
         with self.assertRaises(TemplateDoesNotExist):
             self.client.get(single_url)
+
+        self.assertEqual(reverse('multiple-view-set:fourth'), fourth_url)
+        with self.assertRaises(TemplateDoesNotExist):
+            self.client.get(fourth_url)
