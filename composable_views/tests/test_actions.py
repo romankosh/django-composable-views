@@ -98,19 +98,12 @@ urlpatterns = [
 ]
 
 
-def show_urls(urllist, depth=0):
-    for entry in urllist:
-        print("  " * depth, entry.regex.pattern, '  ', getattr(entry, 'name', ''), getattr(entry, 'namespace', ''))
-        if hasattr(entry, 'url_patterns'):
-            show_urls(entry.url_patterns, depth + 1)
-
-
 @override_settings(ROOT_URLCONF=__name__)
 class ActionsViewConnectorTestCase(test.TestCase):
     def setUp(self):
         self.client = test.Client()
 
-    def test_actions_(self):
+    def test_actions_dict(self):
         self.assertIn('one', ActionsViewList.actions)
         self.assertIn('three', ActionsViewListConnector.actions)
 
