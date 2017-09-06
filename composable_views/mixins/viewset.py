@@ -19,15 +19,23 @@ def postfixed_items(lst, postfix):
 
 def collect_attributes(Class, prefix, attrs, shared=[]):
     shared = set(shared)
+
     attributes = {
         attr: value
         for attr, key, value in (
             # Getting an attribute in resulted class.
             # +1 - because prefix has a delimiter `_`.
-            (key[len(prefix) + 1:], key, value)
-            for key, value in attrs.items()
+            (key if key in shared else key[len(prefix) + 1:], key, value)
+            for key, value in sorted(
+                attrs.items(),
+                key=lambda x: x[0] not in shared
+            )
         )
-        if (key.startswith(prefix) or key in shared) and hasattr(Class, attr)
+        if (
+            (key.startswith(prefix) and hasattr(Class, attr))
+            or
+            (key in shared and hasattr(Class, key))
+        )
     }
 
     attributes['parent_class'] = None
@@ -74,7 +82,7 @@ class ViewSetBase(ClassConnectorBase):
             ViewBase.__name__,
             (*bases, ViewBase),
             collect_attributes(
-                ViewBase, base, attrs, attrs.get('shared_attributes', [])
+                ViewBase, base, attrs, attrs.get('shared_properties', [])
             )
         )
 
