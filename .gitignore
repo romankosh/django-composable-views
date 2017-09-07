@@ -48,3 +48,4 @@ htmlcov
 
 # Files to ignore
 .coverage
+docs/build

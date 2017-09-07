@@ -184,7 +184,7 @@ class ViewSetTestCase(test.TestCase):
 
     def test_views_response_class(self):
         single_url = '/single-view/'
-        fourth_url = '/fourth-view/'
+        fourth_url = '/fourth/'
 
         self.assertEqual(reverse('multiple-view-set:single-view'), single_url)
         with self.assertRaises(TemplateDoesNotExist):

@@ -1,3 +1,7 @@
+"""
+Action class mixins set.
+"""
+
 import collections
 import abc
 from functools import reduce
@@ -13,8 +17,19 @@ from .url_build import UrlBuilderMixin
 
 
 class ActionViewMixin(UrlBuilderMixin, ClassConnectableClass):
+    """
+    Mixin for an action view.
+    """
+
     @cached_property
     def parental(self):
+        """
+        This property gives an opportunity to call parent's view methods.
+
+        Returns:
+            View: Initialized parent view object with request, args and
+                kwargs from the current action view.
+        """
         parent = self.parent_class()
 
         parent.request = self.request
@@ -25,6 +40,16 @@ class ActionViewMixin(UrlBuilderMixin, ClassConnectableClass):
 
     @classmethod
     def set_parent_class(cls, parent_class):
+        """
+        Sets a parent class.
+
+        Args:
+            parent_class (type): Parent view class.
+
+        Raises:
+            ImproperlyConfigured: Any action may be included in only
+                one ActionHolder and have only one parent class.
+        """
         if cls.parent_class is not None:
             raise ImproperlyConfigured(
                 'Action may be registered only once.'
@@ -41,6 +66,23 @@ class ActionConnector(
     ClassConnectable, ClassConnector, collections.UserDict,
     metaclass=ActionConnectorBase
 ):
+    """
+    Mediator between Parent view class and the actions themselves.
+
+    Example:
+        >>> class View(ActionsHolder):
+        >>>    actions = ActionsConnector(
+        >>>        ActionView1,
+        >>>        ActionView2
+        >>>    )
+
+    Attributes:
+        data (dict): Action classes, referenced by their names.
+        url_format (str): Url generation format that will prefix all
+            actions that connector holds.
+        url_namespace (str): Namespace for view actions.
+    """
+
     url_namespace = 'actions'
     url_format = r'^{regex}action/'
 
@@ -52,29 +94,73 @@ class ActionConnector(
         super().__init__(*actions)
 
     def set_parent_class(self, cls):
+        """
+        Connector sets a parent class for each stored action.
+
+        Args:
+            cls (type): Parent view class.
+        """
         super().set_parent_class(cls)
 
         for key in self.data:
             self.data[key].set_parent_class(cls)
 
     def __getattr__(self, key):
+        """
+        Actions can be accessed by their name as an attribute of
+        actions connector.
+
+        Args:
+            key (str): Action name.
+
+        Returns:
+            View: Action view class.
+
+        Raises:
+            AttributeError: If connector has no actions with that name.
+        """
         try:
             return self.data[key]
         except KeyError as e:
             raise AttributeError(e)
 
     def as_urls(self, regex_list):
+        """
+        Generates urls for actions.
+
+        Args:
+            regex_list (list): List of regexes from the parent view to
+                prefix action urls.
+
+        Returns:
+            list: Description
+        """
         urls = reduce(
             lambda acc, x: acc + list(x[1].as_urls()), self.items(), []
         )
 
-        return url(r'^', include([
-            url(self.url_format.format(regex=regex), include(urls))
-            for regex in regex_list
-        ], namespace=self.url_namespace))
+        return [
+            url(r'^', include([
+                url(self.url_format.format(regex=regex), include(urls))
+                for regex in regex_list
+            ], namespace=self.url_namespace))
+        ]
 
 
 class ActionsHolderBase(ClassConnectorBase):
+    """
+    Metaclass that finds actions holder(or creates a new one) with the
+    provided actions list.
+
+    Attributes:
+        actions_list_parameter (str): Parameter/attribute that stores
+            holder in the resulted class.
+
+    Raises:
+        ImproperlyConfigured: If stored in an actions attribute
+            data has incorrect type.
+    """
+
     actions_list_parameter = 'actions'
 
     def __new__(cls, name, bases, attrs):
@@ -101,6 +187,25 @@ class ActionsHolderBase(ClassConnectorBase):
 class ActionsHolder(
     ClassConnector, UrlBuilderMixin, metaclass=ActionsHolderBase
 ):
+    """
+    Actions holder mixin.
+
+    Used to describe a list of actions to use in the view.
+
+    Example:
+        >>> class View(ActionsHolder):
+        >>>     actions = ActionsConnector(
+        >>>         ActionView1,
+        >>>         ActionView2
+        >>>     )
+
+    Attributes:
+        actions (iterable | ActionConnector): Value may be any
+            iterable, and a new ``ActionConnector`` will be
+            created or you may create an ``ActionConnector``
+            by yourself.
+    """
+
     actions = []
 
     @classmethod
@@ -112,5 +217,5 @@ class ActionsHolder(
             url(r'^', include([cls.actions.as_urls((
                 view_url.regex.pattern.lstrip('^').rstrip('$')
                 for view_url in view_urls
-            ))], namespace=cls.get_url_name()))
+            ))[0]], namespace=cls.get_url_name()))
         ]

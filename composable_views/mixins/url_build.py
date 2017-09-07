@@ -1,3 +1,15 @@
+"""
+URL build mixins, used to automaticly generate urls for any class based
+view.
+
+Has set of default regexes.
+
+Attributes:
+    PAGED_REGEX (regex): Regex for views with pagination.
+    PK_REGEX (regex): Regex for views that receives elements by `pk`.
+    SLUG_REGEX (regex): Regex for views that receives elements by `slug`.
+    PK_SLUG_REGEX (regex): Combination of `PK_REGEX` and `SLUG_REGEX`.
+"""
 import re
 
 from django.conf.urls import url
@@ -7,7 +19,7 @@ __all__ = (
     'PK_REGEX',
     'SLUG_REGEX',
     'PK_SLUG_REGEX',
-    'PAGED_REGEXP',
+    'PAGED_REGEX',
 
     'NamedClassMixin',
     'UrlBuilderMixin',
@@ -15,11 +27,20 @@ __all__ = (
 
 PK_REGEX = r'(?P<pk>[0-9]+)/'
 SLUG_REGEX = r'(?P<slug>[0-9a-zA-Z_-]+)/'
-PK_SLUG_REGEX = f'{PK_REGEX}-{SLUG_REGEX}'
-PAGED_REGEXP = r'page/(?P<page>[0-9]+)/'
+PK_SLUG_REGEX = fr'{PK_REGEX}-{SLUG_REGEX}'
+PAGED_REGEX = r'page/(?P<page>[0-9]+)/'
 
 
 class NamedClassMixin:
+    """
+    For classes that shoud have name and verbose name.
+
+    Attributes:
+        name (str): Name of the class. May be used as a key for class
+            identification.
+        verbose_name (str): Readable version of the class name.
+    """
+
     name = None
     verbose_name = None
 
@@ -62,6 +83,19 @@ class NamedClassMixin:
 
 
 class UrlBuilderMixin(NamedClassMixin):
+    """
+    Mixin for automatic url building for views or other named classes.
+
+
+    Attributes:
+        url_format (str): Url format based on to variables: `name` and
+            `regex`.
+        url_name (str): Url name. By default inherits it's value from
+            `name` attribute, but can be customized.
+        url_regex_list (list): List of regexes used to generate urls
+            for the view.
+    """
+
     url_name = None
     url_regex_list = [
         r''

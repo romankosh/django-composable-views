@@ -1,7 +1,7 @@
 from django import test
 from django.views.generic import View
 
-from ..mixins import NamedClassMixin, UrlBuilderMixin, PAGED_REGEXP
+from ..mixins import NamedClassMixin, UrlBuilderMixin, PAGED_REGEX
 
 
 class NamedClassTestCase(test.TestCase):
@@ -74,7 +74,7 @@ class UrlBuilderTestCase(test.TestCase):
         self.assertEqual(second.name, 'some-url')
         self.assertEqual(second.callback.view_class, self.CustomRegex)
 
-        none, paged = self.CustomRegex.as_urls(['', PAGED_REGEXP])
+        none, paged = self.CustomRegex.as_urls(['', PAGED_REGEX])
         self.assertEqual(none._regex, r'^some-url/$')
         self.assertEqual(paged._regex, r'^some-url/page/(?P<page>[0-9]+)/$')
         self.assertEqual(paged.name, 'some-url')
