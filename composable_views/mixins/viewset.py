@@ -1,3 +1,4 @@
+from typing import Generator
 from functools import reduce
 
 from django.conf.urls import url, include
@@ -9,7 +10,17 @@ from ..utils import (
 from .url_build import UrlBuilderMixin
 
 
-def postfixed_items(lst, postfix):
+def postfixed_items(lst: list, postfix: str) -> Generator[str, None, None]:
+    """
+    Retreives all elements with provided postfix.
+
+    Args:
+        lst (list): List of strings.
+        postfix (str): Postfix.
+
+    Returns:
+        Generator[str, None, None]: Elements tha ents of provided postfix.
+    """
     return (
         key[:0 - len(postfix)]
         for key in lst
@@ -17,7 +28,24 @@ def postfixed_items(lst, postfix):
     )
 
 
-def collect_attributes(Class, prefix, attrs, shared=[]):
+def collect_attributes(
+    Class: type,
+    prefix: str,
+    attrs: dict,
+    shared: list=[]
+) -> dict:
+    """
+    Collects all attributes from `attrs` parameter that:
+    * Exists in the `Class` as an attributes and prefixed with `prefix`.
+    * Exists in `shared` property and also are available in the `Class`
+
+    Args:
+        Class (type): Class to look for available properties.
+        prefix (str): Properties prefix.
+        attrs (dict): Attributes - value dict.
+        shared (list, optional): Dhared attributes that have both in
+            the Class and in the attrs keys without prefixes.
+    """
     shared = set(shared)
 
     attributes = {
@@ -44,6 +72,14 @@ def collect_attributes(Class, prefix, attrs, shared=[]):
 
 
 class ViewSetBase(ClassConnectorBase):
+    """
+    Metaclass for view set generation.
+
+    Attributes:
+        base_postfix (str): Base view classes postfix.
+        view_postfix (str): Resulted view class postfix.
+    """
+
     base_postfix = '_view_base'
     view_postfix = '_view_class'
 
@@ -72,6 +108,18 @@ class ViewSetBase(ClassConnectorBase):
 
     @classmethod
     def create_view(cls, base, attrs):
+        """
+        Creates a new view from the base class.
+
+        Args:
+            base (type): View class on which new view class will be
+                based on.
+            attrs (dict): All attributes of the viewset that will be
+                created.
+
+        Returns:
+            type: Newly created View class from provided Base class.
+        """
         ViewBase = attrs[base + cls.base_postfix]
         bases = (
             x for x in (ClassConnectableClass, UrlBuilderMixin)
@@ -88,6 +136,18 @@ class ViewSetBase(ClassConnectorBase):
 
     @classmethod
     def check_view(cls, view):
+        """
+        View checks.
+
+        Args:
+            view (type): View that should be checked for incorrection.
+
+        Raises:
+            ImproperlyConfigured: When view class doid not inherits a
+                required bases.
+            ImproperlyConfigured: When View class included into a
+                several viewsets.
+        """
         if not issubclass(view, ClassConnectableClass):
             raise ImproperlyConfigured(
                 f'View `{view.__name__}` class should subclass '
@@ -107,6 +167,28 @@ class ViewSetBase(ClassConnectorBase):
 
 
 class ViewSet(UrlBuilderMixin, ClassConnector, metaclass=ViewSetBase):
+    """
+    View set class.
+
+    Viewset views are stored in:
+        * `{name}{base_postfix}` - View base class will be stored. And
+            then, from this class willl be generated a view class.
+        * `{name}{view_postfix}` - View class itself.
+
+    Where `name` - is the name of the view properties prefix.
+    Each `{name}_{property}` will be automaticaly passed to the newly
+    generated view from base class with the same name. But only if
+    there are already exists the same attribute/method.
+
+    Also all the properties form `shared_properties` will be also
+    injected from viewset to newly created view class during a view
+    creation process.
+
+    Attributes:
+        shared_properties (list): List of properties that will be
+            injected into all bases that viewset have.
+    """
+
     shared_properties = []
 
     @classmethod
