@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.test.utils import override_settings
 from django.urls import reverse
 
-from ..mixins.url_build import PK_REGEX, PAGED_REGEXP
+from ..mixins.url_build import PK_REGEX, PAGED_REGEX
 from ..mixins.actions import ActionViewMixin, ActionConnector, ActionsHolder
 
 
@@ -72,7 +72,7 @@ class ActionComplex(ActionsHolder, TView):
     }
     url_regex_list = [
         PK_REGEX,
-        PAGED_REGEXP
+        PAGED_REGEX
     ]
     per_page = 2
 
