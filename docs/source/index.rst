@@ -1,5 +1,5 @@
 Welcome to Django Composable Views documentation!
-==============================================
+=================================================
 
 Some description.
 
@@ -22,7 +22,8 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   views
+   mixins/index
+   utils
    changelog
 
 
