@@ -24,18 +24,17 @@ def configure(nose_args=None):
         )
 
 
-def runtests(*test_args):
+def runner(*test_args):
     from django_nose import NoseTestSuiteRunner
     runner = NoseTestSuiteRunner()
 
     if not test_args:
         test_args = ['composable_views']
     num_failures = runner.run_tests(test_args)
-    if num_failures:
-        sys.exit(num_failures)
+    sys.exit(num_failures)
 
 
-if __name__ == '__main__':
+def runtests():
     parser = OptionParser()
     parser.add_option(
         '--with-coverage', dest='coverage', default=False, action='store_true'
@@ -66,4 +65,8 @@ if __name__ == '__main__':
             '--cover-html-dir=htmlcov'
         ])
     configure(nose_args)
+    runner()
+
+
+if __name__ == '__main__':
     runtests()

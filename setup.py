@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def requirements_getter(filename):
@@ -22,6 +22,8 @@ def requirements_getter(filename):
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+pkj_name = 'composable_views'
+
 
 setup(
     name='django-composable-views',
@@ -33,12 +35,13 @@ setup(
     tests_require=requirements_getter(
         os.path.join(here, 'requirements/test.txt')
     ),
+    test_suite="runtests.runtests",
     description="Composable class-based views for Django",
     long_description=open('README.rst', 'r').read(),
     license="MIT",
     author="Alex Tkachenko",
     author_email="preusx@gmail.com",
-    packages=['composable_views'],
+    packages=[pkj_name] + [pkj_name + '.' + x for x in find_packages(pkj_name)],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
