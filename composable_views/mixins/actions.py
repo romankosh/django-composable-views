@@ -16,6 +16,12 @@ from ..utils import (
 from .url_build import UrlBuilderMixin
 
 
+__all__ = (
+    'ActionViewMixin', 'ReusableActionMixin', 'ActionConnectorBase',
+    'ActionConnector', 'ActionsHolderBase', 'ActionsHolder'
+)
+
+
 class ActionViewMixin(UrlBuilderMixin, ClassConnectableClass):
     """
     Mixin for an action view.
@@ -58,6 +64,12 @@ class ActionViewMixin(UrlBuilderMixin, ClassConnectableClass):
         super().set_parent_class(parent_class)
 
 
+class ReusableActionMixin:
+    """
+    Mixin to use if this action may be used in a several views.
+    """
+
+
 class ActionConnectorBase(ClassConnectorBase, abc.ABCMeta):
     pass
 
@@ -88,10 +100,30 @@ class ActionConnector(
 
     def __init__(self, *actions):
         self.data = {
-            action.get_name(): action for action in actions
+            action.get_name(): action
+            for action in (self.get_action_class(x) for x in actions)
         }
 
         super().__init__(*actions)
+
+    def get_action_class(self, action_class):
+        """
+        If a provided class is an instance of ReusableActionMixin then
+        construct a new class with a parent_class equals to None. Else
+        just return proviced class.
+
+        Args:
+            action_class (type): Class that needs to be checked.
+
+        Returns:
+            type: Newly cerated or passed down class.
+        """
+        if not issubclass(action_class, ReusableActionMixin):
+            return action_class
+
+        return type(action_class.__name__, (action_class, ), {
+            'parent_class': None
+        })
 
     def set_parent_class(self, cls):
         """

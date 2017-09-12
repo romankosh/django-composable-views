@@ -7,7 +7,9 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from ..mixins.url_build import PK_REGEX, PAGED_REGEX
-from ..mixins.actions import ActionViewMixin, ActionConnector, ActionsHolder
+from ..mixins.actions import (
+    ActionViewMixin, ActionConnector, ActionsHolder, ReusableActionMixin
+)
 
 
 class TView(View):
@@ -35,17 +37,23 @@ class ActionFive(ActionViewMixin, TView):
     name = 'five'
 
 
+class Reusable(ReusableActionMixin, ActionViewMixin, TView):
+    name = 'reusable'
+
+
 class ActionsViewList(ActionsHolder, TView):
     actions = [
         ActionOne,
-        ActionTwo
+        ActionTwo,
+        Reusable
     ]
 
 
 class ActionsViewListConnector(ActionsHolder, TView):
     actions = ActionConnector(
         ActionThree,
-        ActionFour
+        ActionFour,
+        Reusable
     )
 
 
@@ -72,13 +80,14 @@ class ActionComplex(ActionsHolder, TView):
     }
     url_regex_list = [
         PK_REGEX,
-        PAGED_REGEX
+        PAGED_REGEX,
     ]
     per_page = 2
 
     actions = [
         ActionParentalSingle,
-        ActionParentalList
+        ActionParentalList,
+        Reusable
     ]
 
     def get_object(self):
@@ -139,6 +148,31 @@ class ActionsViewConnectorTestCase(test.TestCase):
         with self.assertRaises(ImproperlyConfigured):
             class ConnectorString(ActionsHolder, View):
                 actions = 'string'
+
+    def test_actions_reusable(self):
+        view_url = '/actions-view-list-connector/action/reusable/'
+        complex_url = '/action-complex/1/action/reusable/'
+
+        self.assertEqual(
+            reverse('actions-view-list-connector:actions:reusable'), view_url
+        )
+        self.assertEqual(
+            reverse('action-complex:actions:reusable', kwargs={'pk': 1}),
+            complex_url
+        )
+
+        self.assertEqual(
+            ActionComplex.actions.parent_class,
+            ActionComplex
+        )
+        self.assertEqual(
+            ActionsViewList.actions.parent_class,
+            ActionsViewList
+        )
+        self.assertEqual(
+            ActionsViewListConnector.actions.parent_class,
+            ActionsViewListConnector
+        )
 
     def test_actions_url_build(self):
         view_url = '/actions-view-list-connector/'
