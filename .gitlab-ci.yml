@@ -6,6 +6,7 @@ stages:
   - publish
 
 before_script:
+  - apk --no-cache add python3.4 python3.5
   - pip install -r requirements/test.txt
   - pip install tox
 
