@@ -28,14 +28,14 @@ coverage:
 docs:
   stage: build
   script:
-  - cd docs/
-  - pip install -r requirements.txt
-  - apk --no-cache add make
-  - rm -rf build/
-  - make html
+    - cd docs/
+    - pip install -r requirements.txt
+    - apk --no-cache add make
+    - rm -rf build/
+    - make html
   artifacts:
     paths:
-    - docs/build/html/
+      - docs/build/html/
   expire_in: 1 day
 
 pages:
@@ -49,6 +49,6 @@ pages:
     - docs
   artifacts:
     paths:
-    - public
+      - public
   only:
-  - master
+    - master
