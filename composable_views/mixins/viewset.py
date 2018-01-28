@@ -1,10 +1,10 @@
 from typing import Generator
 from functools import reduce
 
-from django.conf.urls import url, include
 from django.core.exceptions import ImproperlyConfigured
 
 from ..utils import (
+    re_path, include,
     ClassConnectable, ClassConnector, ClassConnectorBase, ClassConnectableClass
 )
 from .url_build import UrlBuilderMixin
@@ -193,11 +193,10 @@ class ViewSet(UrlBuilderMixin, ClassConnector, metaclass=ViewSetBase):
 
     @classmethod
     def as_urls(cls, regex_list=None):
-        return [url(r'^', include(
+        return [re_path(r'^', include((
             reduce(
                 lambda acc, x: acc + list(x.as_urls()),
                 cls.views.values(),
                 []
-            ),
-            namespace=cls.get_name() or None
-        ))]
+            ), cls.get_name() or None
+        )))]

@@ -4,7 +4,10 @@ from django.utils.functional import SimpleLazyObject
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponse
 from django.test.utils import override_settings
-from django.urls import reverse
+try:
+    from django.urls import reverse
+except ModuleNotFoundError as e:
+    from django.core.urlresolvers import reverse
 
 from ..mixins.url_build import PK_REGEX, PAGED_REGEX
 from ..mixins.actions import (

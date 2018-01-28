@@ -26,6 +26,7 @@ _site
 .project
 .settings
 .tmproj
+.vscode
 *.esproj
 *.sublime-workspace
 *.sublime-project
@@ -45,6 +46,8 @@ __pycache__
 bower_components
 node_modules
 htmlcov
+.tox
+*.egg-info
 
 # Files to ignore
 .coverage

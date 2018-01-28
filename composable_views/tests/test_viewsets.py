@@ -7,7 +7,10 @@ from django.core.exceptions import ImproperlyConfigured
 from django.template.exceptions import TemplateDoesNotExist
 from django.http import HttpResponse
 from django.test.utils import override_settings
-from django.urls import reverse
+try:
+    from django.urls import reverse
+except ModuleNotFoundError as e:
+    from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from ..mixins.viewset import (
