@@ -7,7 +7,7 @@ pkj_name = 'composable_views'
 
 setup(
     name='django-composable-views',
-    version='0.1.0',
+    version='1.0.0',
     url='https://gitlab.com/preusx/django-composable-views',
     install_requires=['django>=1.9'],
     tests_require=['django-nose', 'coverage'],
