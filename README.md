@@ -8,7 +8,7 @@
 Installing from gitlab:
 
 ```bash
-pip install git+https://gitlab.com/preusx/django-composable-views.git@0.1.0s
+pip install git+https://gitlab.com/preusx/django-composable-views.git@1.0.0
 ```
 
 See the [documentation here](https://preusx.gitlab.io/django-composable-views/).
