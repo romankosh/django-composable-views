@@ -3,6 +3,7 @@ image: python:3.6
 stages:
   - test
   - build
+  - publish
 
 before_script:
   - pip install -r requirements/test.txt
@@ -39,7 +40,7 @@ docs:
     expire_in: 1 day
 
 pages:
-  stage: build
+  stage: publish
   script:
     - mkdir -p public/coverage
     - cp -fr docs/build/html/* public/
