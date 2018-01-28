@@ -13,7 +13,7 @@ setup(
     tests_require=['django-nose', 'coverage'],
     test_suite="runtests.runtests",
     description="Composable class-based views for Django",
-    long_description=open('README.rst', 'r').read(),
+    long_description=open('README.md', 'r').read(),
     license="MIT",
     author="Alex Tkachenko",
     author_email="preusx@gmail.com",

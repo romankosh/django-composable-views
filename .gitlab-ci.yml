@@ -1,21 +1,54 @@
-image: alpine
+image: python
 
-test:
+stages:
+  - test
+  - build
+  - publish
+
+before_script:
+  - pip install -r requirements/test.txt
+  - pip install tox
+
+python36:
+  image: python:3.6
+  stage: test
+  script: tox -epy36-django19 -epy36-django110 -epy36-django111 -epy36-django201 -epy36-djangomaster
+
+coverage:
+  stage: test
   script:
     - pip install tox
-    - tox
-
-pages:
-  script:
-  - apk --no-cache add py2-pip python-dev
-  - pip install -r requirements.txt
-  - apk --no-cache add make
-  - cd docs/
-  - rm -rf build/
-  - make html
-  - mv build/html/ ../public/
+    - tox -e py36-django201
+    - coverage html
+  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
   artifacts:
     paths:
-    - public
+      - htmlcov
+    expire_in: 1 day
+
+docs:
+  stage: build
+  script:
+    - cd docs/
+    - pip install -r requirements.txt
+    - rm -rf build/
+    - make html
+  artifacts:
+    paths:
+      - docs/build/html/
+    expire_in: 1 day
+
+pages:
+  stage: publish
+  script:
+    - mkdir -p public/coverage
+    - cp -fr docs/build/html/* public/
+    - cp -fr htmlcov/* public/coverage/
+  dependencies:
+    - coverage
+    - docs
+  artifacts:
+    paths:
+      - public
   only:
-  - master
+    - master
