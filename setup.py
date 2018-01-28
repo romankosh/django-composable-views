@@ -2,26 +2,6 @@ import os
 from setuptools import setup, find_packages
 
 
-def requirements_getter(filename):
-    result = []
-
-    with open(filename) as f:
-        requirements = map(lambda x: x.strip(), f.readlines())
-
-        for requirement in requirements:
-            if not requirement.startswith('-r'):
-                result.append(requirement)
-                continue
-
-            result += requirements_getter(
-                os.path.join(os.path.dirname(filename), requirement[2:].strip())
-            )
-
-    return result
-
-
-here = os.path.abspath(os.path.dirname(__file__))
-
 pkj_name = 'composable_views'
 
 
@@ -29,12 +9,8 @@ setup(
     name='django-composable-views',
     version='0.1.0',
     url='https://gitlab.com/preusx/django-composable-views',
-    install_requires=requirements_getter(
-        os.path.join(here, 'requirements.txt')
-    ),
-    tests_require=requirements_getter(
-        os.path.join(here, 'requirements/test.txt')
-    ),
+    install_requires=['django>=1.9'],
+    tests_require=['django-nose', 'coverage'],
     test_suite="runtests.runtests",
     description="Composable class-based views for Django",
     long_description=open('README.rst', 'r').read(),
