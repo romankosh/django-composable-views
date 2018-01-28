@@ -36,7 +36,7 @@ docs:
   artifacts:
     paths:
       - docs/build/html/
-  expire_in: 1 day
+    expire_in: 1 day
 
 pages:
   stage: build
