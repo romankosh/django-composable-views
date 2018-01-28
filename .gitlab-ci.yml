@@ -1,14 +1,21 @@
 image: alpine
 
+stages:
+  - test
+  - build
+
+before_script:
+  - apk --no-cache add py2-pip python-dev
+
 test:
+  stage: test
   script:
-    - apk --no-cache add py2-pip python-dev
     - pip install tox
     - tox
 
 pages:
+  stage: build
   script:
-  - apk --no-cache add py2-pip python-dev
   - cd docs/
   - pip install -r requirements.txt
   - apk --no-cache add make
