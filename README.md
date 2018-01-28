@@ -1,5 +1,5 @@
 [![pipeline status](https://gitlab.com/preusx/django-composable-views/badges/master/pipeline.svg)](https://gitlab.com/preusx/django-composable-views/commits/master)
-
+[![coverage report](https://gitlab.com/preusx/django-composable-views/badges/master/coverage.svg)](https://gitlab.com/preusx/django-composable-views/commits/master)
 
 # Django composable views
 

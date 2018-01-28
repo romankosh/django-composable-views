@@ -1,19 +1,31 @@
-image: alpine
+image: python:3.6
 
 stages:
   - test
   - build
 
 before_script:
-  - apk --no-cache add py2-pip python-dev
+  - pip install -r requirements/test.txt
+  - pip install tox
 
 test:
   stage: test
   script:
-    - pip install tox
     - tox
 
-pages:
+coverage:
+  stage: test
+  script:
+    - pip install tox
+    - tox -e py36-django201
+    - coverage html
+  coverage: '/TOTAL.+ ([0-9]{1,3}%)/'
+  artifacts:
+    paths:
+      - htmlcov
+    expire_in: 1 day
+
+docs:
   stage: build
   script:
   - cd docs/
@@ -21,7 +33,20 @@ pages:
   - apk --no-cache add make
   - rm -rf build/
   - make html
-  - mv build/html/ ../public/
+  artifacts:
+    paths:
+    - docs/build/html/
+  expire_in: 1 day
+
+pages:
+  stage: build
+  script:
+    - mkdir -p public/coverage
+    - cp -fr docs/build/html/* public/
+    - cp -fr htmlcov/* public/coverage/
+  dependencies:
+    - coverage
+    - docs
   artifacts:
     paths:
     - public
