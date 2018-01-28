@@ -1,4 +1,4 @@
-image: python:3.6
+image: python
 
 stages:
   - test
@@ -6,14 +6,23 @@ stages:
   - publish
 
 before_script:
-  - apt-get install python3.4 python3.5
   - pip install -r requirements/test.txt
   - pip install tox
 
-test:
+python34:
+  image: python:3.4
   stage: test
-  script:
-    - tox
+  script: tox -epy34-django19 -epy34-django110 -epy34-django111 -epy34-django201 -epy34-djangomaster
+
+python35:
+  image: python:3.5
+  stage: test
+  script: tox -epy35-django19 -epy35-django110 -epy35-django111 -epy35-django201 -epy35-djangomaster
+
+python36:
+  image: python:3.6
+  stage: test
+  script: tox -epy36-django19 -epy36-django110 -epy36-django111 -epy36-django201 -epy36-djangomaster
 
 coverage:
   stage: test
@@ -32,7 +41,6 @@ docs:
   script:
     - cd docs/
     - pip install -r requirements.txt
-    - apt-get install make
     - rm -rf build/
     - make html
   artifacts:
