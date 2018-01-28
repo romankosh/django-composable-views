@@ -12,7 +12,7 @@ Attributes:
 """
 import re
 
-from django.conf.urls import url
+from ..utils import re_path
 
 
 __all__ = (
@@ -157,7 +157,7 @@ class UrlBuilderMixin(NamedClassMixin):
             regex_list = cls.url_regex_list
 
         return (
-            url(
+            re_path(
                 cls.get_url_regex(regex),
                 cls.as_view(**kwargs),
                 name=cls.get_url_name()

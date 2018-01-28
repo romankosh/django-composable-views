@@ -6,11 +6,11 @@ import collections
 import abc
 from functools import reduce
 
-from django.conf.urls import url, include
 from django.utils.functional import cached_property
 from django.core.exceptions import ImproperlyConfigured
 
 from ..utils import (
+    re_path, include, path_regex,
     ClassConnectable, ClassConnector, ClassConnectorBase, ClassConnectableClass
 )
 from .url_build import UrlBuilderMixin
@@ -172,10 +172,10 @@ class ActionConnector(
         )
 
         return [
-            url(r'^', include([
-                url(self.url_format.format(regex=regex), include(urls))
+            re_path(r'^', include(([
+                re_path(self.url_format.format(regex=regex), include(urls))
                 for regex in regex_list
-            ], namespace=self.url_namespace))
+            ], self.url_namespace)))
         ]
 
 
@@ -246,8 +246,8 @@ class ActionsHolder(
 
         return [
             *view_urls,
-            url(r'^', include([cls.actions.as_urls((
-                view_url.regex.pattern.lstrip('^').rstrip('$')
+            re_path(r'^', include(([cls.actions.as_urls((
+                path_regex(view_url).pattern.lstrip('^').rstrip('$')
                 for view_url in view_urls
-            ))[0]], namespace=cls.get_url_name()))
+            ))[0]], cls.get_url_name())))
         ]
