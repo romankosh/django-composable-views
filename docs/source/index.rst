@@ -1,19 +1,15 @@
 Welcome to Django Composable Views documentation!
 =================================================
 
-Some description.
+It's the set of simple mixins to make writing views more DRY.
 
 
 Installation
 ------------
 
-Installing from pypi (using pip). ::
+Installing from gitlab. ::
 
-    pip install django-composable-views
-
-Installing from github. ::
-
-    pip install -e git://gitlab.com/preusx/django-composable-views.git#egg=django-composable-views
+    pip install git+https://gitlab.com/preusx/django-composable-views.git@0.1.0
 
 
 Contents
@@ -25,12 +21,3 @@ Contents
    mixins/index
    utils
    changelog
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

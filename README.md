@@ -3,14 +3,12 @@
 
 # Django composable views
 
-
 ## Installation
 
-Installing from github. ::
+Installing from gitlab:
 
-    pip install -e git://gitlab.com/preusx/django-composable-views.git#egg=django-composable-views
+```bash
+pip install git+https://gitlab.com/preusx/django-composable-views.git@0.1.0s
+```
 
-
-See the `documentation here`_
-
-.. _documentation here: https://noop
+See the [documentation here](https://preusx.gitlab.io/django-composable-views/).
