@@ -1,0 +1,21 @@
+image: alpine
+
+test:
+  script:
+    - pip install tox
+    - tox
+
+pages:
+  script:
+  - apk --no-cache add py2-pip python-dev
+  - pip install -r requirements.txt
+  - apk --no-cache add make
+  - cd docs/
+  - rm -rf build/
+  - make html
+  - mv build/html/ ../public/
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
