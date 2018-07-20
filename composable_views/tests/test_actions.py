@@ -17,7 +17,7 @@ from ..mixins.actions import (
 
 class TView(View):
     def get(self, request, *a, **k):
-        return HttpResponse(self.get_name())
+        return HttpResponse(self.get_viewclass_name())
 
 
 class ActionOne(ActionViewMixin, TView):
