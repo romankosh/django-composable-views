@@ -15,11 +15,11 @@ class NamedClassTestCase(test.TestCase):
     class UnNamedClass(NamedClassMixin):
         pass
 
-    def test_get_name(self):
-        self.assertEqual(self.NamedClass.get_name(), 'some')
-        self.assertEqual(self.UnNamedClass.get_name(), 'un-named-class')
+    def test_get_viewclass_name(self):
+        self.assertEqual(self.NamedClass.get_viewclass_name(), 'some')
+        self.assertEqual(self.UnNamedClass.get_viewclass_name(), 'un-named-class')
         self.assertEqual(
-            self.VerboseNamedClass.get_name(), 'verbose-named-class'
+            self.VerboseNamedClass.get_viewclass_name(), 'verbose-named-class'
         )
 
     def test_get_verbose_name(self):

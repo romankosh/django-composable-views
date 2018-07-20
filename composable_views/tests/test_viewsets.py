@@ -22,7 +22,7 @@ from ..utils import ClassConnectableClass
 
 class TView(TemplateView):
     def get_context_data(self, **k):
-        k['name'] = self.get_name()
+        k['name'] = self.get_viewclass_name()
 
         return super().get_context_data(**k)
 
