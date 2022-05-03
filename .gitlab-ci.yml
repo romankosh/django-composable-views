@@ -12,7 +12,7 @@ before_script:
 python36:
   image: python:3.6
   stage: test
-  script: tox -epy36-django19 -epy36-django110 -epy36-django111 -epy36-django20 -epy36-djangomaster
+  script: tox -epy36-django19 -epy36-django110 -epy36-django111 -epy36-djangomaster
 
 coverage:
   stage: test

@@ -204,5 +204,5 @@ class ViewSet(UrlBuilderMixin, ClassConnector, metaclass=ViewSetBase):
                 lambda acc, x: acc + list(x.as_urls()),
                 cls.views.values(),
                 []
-            ), cls.get_name() or None
+            ), cls.get_viewclass_name() or None
         )))]

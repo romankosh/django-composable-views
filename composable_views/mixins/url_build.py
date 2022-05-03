@@ -45,7 +45,7 @@ class NamedClassMixin:
     verbose_name = None
 
     @classmethod
-    def get_name(cls) -> str:
+    def get_viewclass_name(cls) -> str:
         """
         Returns class name for further using
 
@@ -73,7 +73,7 @@ class NamedClassMixin:
 
         if not cls.verbose_name:
             name = (
-                cls.get_name()
+                cls.get_viewclass_name()
                     .replace('-', ' ')
                     .replace('_', ' ')
                     .capitalize()
@@ -110,7 +110,7 @@ class UrlBuilderMixin(NamedClassMixin):
         Returns:
             str: Url name string
         """
-        name = cls.get_name()
+        name = cls.get_viewclass_name()
 
         return (
             cls.url_name if cls.url_name is not None

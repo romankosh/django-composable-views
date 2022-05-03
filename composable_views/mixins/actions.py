@@ -100,7 +100,7 @@ class ActionConnector(
 
     def __init__(self, *actions):
         self.data = {
-            action.get_name(): action
+            action.get_viewclass_name(): action
             for action in (self.get_action_class(x) for x in actions)
         }
 

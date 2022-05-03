@@ -19,7 +19,7 @@ class TView(ContextGetterMixin, UrlBuilderMixin, TemplateView):
 
     def context_name(self, context):
         return {
-            'name': self.get_name()
+            'name': self.get_viewclass_name()
         }
 
 
