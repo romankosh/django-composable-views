@@ -199,7 +199,7 @@ class ActionsHolderBase(ClassConnectorBase):
         actions = attrs.get(cls.actions_list_parameter, [])
 
         if (
-            isinstance(actions, collections.Iterable) and not
+            isinstance(actions, collections.abc.Iterable) and not
             isinstance(actions, ActionConnector) and not
             isinstance(actions, str)
         ):
